@@ -5,12 +5,19 @@ import {
   Button,
   Checkbox,
   Dialog,
+  Dots,
   Flex,
   Grid,
   IconButton,
   Loader,
   Main,
+  NextLink,
+  PageLink,
+  Pagination,
+  PreviousLink,
   Searchbar,
+  SingleSelect,
+  SingleSelectOption,
   Table,
   Tbody,
   Td,
@@ -143,10 +150,16 @@ const BulkPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
   const [parallelProcessingEnabled, setParallelProcessingEnabled] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, pageSize]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -197,11 +210,25 @@ const BulkPage = () => {
     );
   }, [images, searchQuery]);
 
+  const paginatedImages = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredImages.slice(start, start + pageSize);
+  }, [filteredImages, currentPage, pageSize]);
+
+  const totalPages = Math.ceil(filteredImages.length / pageSize);
+
   const handleSelectAll = () => {
-    if (selectedIds.size === filteredImages.length) {
-      setSelectedIds(new Set());
+    const paginatedIds = new Set(paginatedImages.map((img) => img.id));
+    const allPaginatedSelected = paginatedImages.every((img) => selectedIds.has(img.id));
+
+    if (allPaginatedSelected) {
+      const newSelected = new Set(selectedIds);
+      paginatedIds.forEach((id) => newSelected.delete(id));
+      setSelectedIds(newSelected);
     } else {
-      setSelectedIds(new Set(filteredImages.map((img) => img.id)));
+      const newSelected = new Set(selectedIds);
+      paginatedIds.forEach((id) => newSelected.add(id));
+      setSelectedIds(newSelected);
     }
   };
 
@@ -461,8 +488,8 @@ const BulkPage = () => {
       <Flex justifyContent="space-between" alignItems="center" width="100%">
         <Flex alignItems="center" gap={4} flex="1">
           <Checkbox
-            checked={selectedIds.size === filteredImages.length && filteredImages.length > 0}
-            indeterminate={selectedIds.size > 0 && selectedIds.size < filteredImages.length}
+            checked={paginatedImages.length > 0 && paginatedImages.every((img) => selectedIds.has(img.id))}
+            indeterminate={paginatedImages.some((img) => selectedIds.has(img.id)) && !paginatedImages.every((img) => selectedIds.has(img.id))}
             onCheckedChange={handleSelectAll}
           />
           <Box flex="1" maxWidth="300px">
@@ -494,7 +521,7 @@ const BulkPage = () => {
 
   const renderGridView = () => (
     <Grid.Root gap={4}>
-      {filteredImages.map((image) => (
+      {paginatedImages.map((image) => (
         <Grid.Item col={3} s={4} xs={6} key={image.id} style={{ minWidth: 0 }}>
           <Box
             background="neutral0"
@@ -570,8 +597,8 @@ const BulkPage = () => {
         <Tr>
           <Th style={{ width: '48px' }}>
             <Checkbox
-              checked={selectedIds.size === filteredImages.length && filteredImages.length > 0}
-              indeterminate={selectedIds.size > 0 && selectedIds.size < filteredImages.length}
+              checked={paginatedImages.length > 0 && paginatedImages.every((img) => selectedIds.has(img.id))}
+              indeterminate={paginatedImages.some((img) => selectedIds.has(img.id)) && !paginatedImages.every((img) => selectedIds.has(img.id))}
               onCheckedChange={handleSelectAll}
             />
           </Th>
@@ -590,7 +617,7 @@ const BulkPage = () => {
         </Tr>
       </Thead>
       <Tbody>
-        {filteredImages.map((image) => (
+        {paginatedImages.map((image) => (
           <Tr key={image.id} onClick={() => handleSelect(image.id)} style={{ cursor: 'pointer' }}>
             <Td
               onClick={(e: React.MouseEvent) => {
@@ -756,6 +783,70 @@ const BulkPage = () => {
               </Box>
 
               {viewMode === 'grid' ? renderGridView() : renderListView()}
+
+              <Flex justifyContent="space-between" alignItems="center" paddingTop={4} width="100%">
+                <Box>
+                  <SingleSelect
+                    value={pageSize.toString()}
+                    onChange={(value: string) => setPageSize(Number(value))}
+                    size="S"
+                  >
+                    <SingleSelectOption value="10">10</SingleSelectOption>
+                    <SingleSelectOption value="20">20</SingleSelectOption>
+                    <SingleSelectOption value="50">50</SingleSelectOption>
+                    <SingleSelectOption value="100">100</SingleSelectOption>
+                  </SingleSelect>
+                </Box>
+
+                {totalPages > 1 && (
+                  <Box>
+                    <Pagination activePage={currentPage} pageCount={totalPages}>
+                      <PreviousLink onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}>
+                        Previous
+                      </PreviousLink>
+                      {(() => {
+                        const pages: (number | 'dots')[] = [];
+                        const showPages = new Set<number>();
+
+                        showPages.add(1);
+                        showPages.add(totalPages);
+                        if (currentPage > 1) showPages.add(currentPage - 1);
+                        showPages.add(currentPage);
+                        if (currentPage < totalPages) showPages.add(currentPage + 1);
+
+                        let lastPage = 0;
+                        for (let page = 1; page <= totalPages; page++) {
+                          if (showPages.has(page)) {
+                            if (lastPage < page - 1) {
+                              pages.push('dots');
+                            }
+                            pages.push(page);
+                            lastPage = page;
+                          }
+                        }
+
+                        return pages.map((item, index) => {
+                          if (item === 'dots') {
+                            return <Dots key={`dots-${index}`} />;
+                          }
+                          return (
+                            <PageLink
+                              key={item}
+                              number={item}
+                              onClick={() => setCurrentPage(item)}
+                            >
+                              {item}
+                            </PageLink>
+                          );
+                        });
+                      })()}
+                      <NextLink onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}>
+                        Next
+                      </NextLink>
+                    </Pagination>
+                  </Box>
+                )}
+              </Flex>
             </Flex>
           )}
         </Layouts.Content>
