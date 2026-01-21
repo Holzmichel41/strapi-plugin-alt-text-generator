@@ -66,5 +66,9 @@
   "name": "@strapix/strapi-plugin-alt-text-generator",
   "description": "Automatically generates AI-powered alt text for images in the Strapi Media Library to improve accessibility and content quality.",
   "license": "MIT",
-  "author": "holzmichel41 <47560723+Holzmichel41@users.noreply.github.com>"
+  "author": "holzmichel41 <47560723+Holzmichel41@users.noreply.github.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Holzmichel41/strapi-plugin-alt-text-generator"
+  }
 }
