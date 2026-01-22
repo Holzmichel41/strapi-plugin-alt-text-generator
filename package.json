@@ -33,8 +33,7 @@
   "dependencies": {
     "@strapi/design-system": "^2.0.0-rc.30",
     "@strapi/icons": "^2.0.0-rc.30",
-    "react-intl": "^8.0.11",
-    "sharp": "^0.34.5"
+    "react-intl": "^8.0.11"
   },
   "devDependencies": {
     "@strapi/sdk-plugin": "^5.4.0",
@@ -46,6 +45,7 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.30.3",
+    "sharp": "^0.33.5",
     "styled-components": "^6.3.6",
     "typescript": "^5.9.3"
   },
@@ -55,6 +55,7 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.30.3",
+    "sharp": ">=0.33.0",
     "styled-components": "^6.3.6"
   },
   "strapi": {
