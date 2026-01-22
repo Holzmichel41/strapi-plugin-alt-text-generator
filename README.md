@@ -2,6 +2,12 @@
 
 Automatically generates AI-powered alt text for images in the Strapi Media Library to improve accessibility and content quality.
 
+> **Note:** This plugin is currently only compatible with **Strapi v5**.
+
+![Alternative Text Generator Plugin](https://strapix.com/plugin-screenshot.png)
+
+🎬 [Watch the demo video](https://strapix.com/preview.mov)
+
 ## Installation
 
 ### Step 1: Install the Plugin
